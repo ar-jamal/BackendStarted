@@ -2,6 +2,7 @@ const express = require("express");
 const app = express()
 const PORT = process.env.PORT || 5000
 const userModel = require("./Models/user")
+const bcrypt = require("bcrypt")
 
 const mongoose = require("mongoose");
 const { query, response } = require("express");
@@ -14,18 +15,24 @@ mongoose.connect(DBURI)
 // BODY PARSER
 app.use(express.json())
 
+// SIGNIN
+
+// app.get("/api/signinUser") {
+// }
+
 // SIGNUP API
 
 app.post("/api/signupUser", (request, response) => {
 
     const { userName, firstName, lastName, email, password, phoneNumber, dateOfBirth } = request.body
+    const hashPassword = bcrypt.hashSync(password, 10)
 
     const objToSend = {
         user_name: userName,
         first_name: firstName,
         last_name: lastName,
         email: email,
-        password: password,
+        password: hashPassword,
         phone_number: phoneNumber,
         dob: dateOfBirth
     }
@@ -38,11 +45,12 @@ app.post("/api/signupUser", (request, response) => {
         return;
     } 
     // else {
-        userModel.find({ email: email } || {user_name: userName }, (error, data) => {
+        userModel.findOne({ email: email } , (error, data) => {
             if (error) {
                 response.send(`internal error: ${error}`)
             } else if (data) {
                 response.send("user already exists try other email")
+                console.log(data)
             } else {
                 userModel.create(objToSend, (error, data) => {
                     if (error) {
@@ -53,17 +61,10 @@ app.post("/api/signupUser", (request, response) => {
                     } else {
                         response.json({
                             message: "user successfully created",
+                            id: data._id,
                             status: true
                         })
-                        userModel.findOne({email: email} && {password: password}, (error, data) => {
-                            if(error) {
-                                response.json({
-                                    message: "internal error"
-                                })
-                            } else {
-                                
-                            }
-                        })
+                        
                     }
                 })
             }

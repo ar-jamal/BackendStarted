@@ -16,9 +16,55 @@ mongoose.connect(DBURI)
 app.use(express.json())
 
 // SIGNIN
+app.post("/api/signinUser", (request, response) => {
 
-// app.get("/api/signinUser") {
-// }
+    const { userName, email, password } = request.body
+    // const hashPassword = bcrypt.hashSync(password, 10)
+
+    const objToSend = {
+        user_name: userName,
+        email: email,
+        password: password,
+    }
+
+    if ( !email, !password) {
+        response.json({
+            message: "plz filled all required fields",
+            status: false
+        })
+        return;
+    }
+    userModel.findOne({ email: email }, (error, data) => {
+        if (error) {
+            response.send(`internal error: ${error}`)
+        } else {
+            if (!user) {
+                response.json({
+                    message: "credentials error",
+                    status: false,
+                });
+                return;
+            } else {
+                const comparePassword = bcrypt.compareSync(password, data.password);
+                if (comparePassword) {
+                    response.json({
+                        message: `user successfully login`,
+                        status: true,
+                        user,
+                    })
+                } else {
+                    response.json({
+                        message: "credentials error",
+                        status: false
+                    })
+                }
+
+            }
+        }
+
+
+    })
+})
 
 // SIGNUP API
 
@@ -41,35 +87,33 @@ app.post("/api/signupUser", (request, response) => {
         response.json({
             message: "plz filled all required fields",
             status: false
-        }) 
-        return;
-    } 
-    // else {
-        userModel.findOne({ email: email } , (error, data) => {
-            if (error) {
-                response.send(`internal error: ${error}`)
-            } else if (data) {
-                response.send("user already exists try other email")
-                console.log(data)
-            } else {
-                userModel.create(objToSend, (error, data) => {
-                    if (error) {
-                        response.json({
-                            message: `internal error: ${error}`,
-                            status: false
-                        })
-                    } else {
-                        response.json({
-                            message: "user successfully created",
-                            id: data._id,
-                            status: true
-                        })
-                        
-                    }
-                })
-            }
         })
-    // }
+        return;
+    }
+    userModel.findOne({ email: email }, (error, data) => {
+        if (error) {
+            response.send(`internal error: ${error}`)
+        } else if (data) {
+            response.send("user already exists try other email")
+            console.log(data)
+        } else {
+            userModel.create(objToSend, (error, data) => {
+                if (error) {
+                    response.json({
+                        message: `internal error: ${error}`,
+                        status: false
+                    })
+                } else {
+                    response.json({
+                        message: "user successfully created",
+                        status: true,
+                        user,
+                    })
+
+                }
+            })
+        }
+    })
 })
 
 

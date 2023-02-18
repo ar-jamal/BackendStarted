@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+// require("dotenv").config()
 const PORT = process.env.PORT || 5000;
 const userModel = require("./Models/user");
 const bcrypt = require("bcrypt");
@@ -13,6 +14,7 @@ mongoose
   .connect(DBURI)
   .then((res) => console.log("MongoDb connected successfully"))
   .catch((err) => console.log("DB error hai", err));
+
 
 // BODY PARSER
 app.use(express.json());
@@ -30,7 +32,7 @@ app.post("/api/signinuser", async (req, res) => {
 
   if (!email || !password) {
     res.json({
-      message: "plz filled all required fields",
+      message: "plz filled all required fields",  
       status: false,
     });
     return;
